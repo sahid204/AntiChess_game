@@ -5,8 +5,8 @@ import { Chess } from "chess.js";
 const ChessBoard = () => {
   const [game, setgame] = useState(new Chess());
   const [playert, setplayert] = useState("white");
-  const [status, setStatus] = useState('');
-  const [error, setError] = useState('');
+  const [status, setStatus] = useState('white to move');
+  const [inval, setInval] = useState('');
 
   const checkStatus = () => {
     if (game.isCheckmate()) {
@@ -18,12 +18,12 @@ const ChessBoard = () => {
     } else if (game.isThreefoldRepetition()) {
       setStatus('Threefold Repetition. Game Draw');
     } else {
-      setStatus(`${playert === 'white' ? 'Black' : 'White'} to move`);
+      setStatus(`${playert === 'white' ? 'Black' : 'White'} to Move`);
     }
   };
 
   const onDrop = (sourceSquare, targetSquare) => {
-    setError(''); // Clear any previous error
+    // setError(''); // Clear any previous error
     console.log(`sourceSquare: ${sourceSquare}, targetSquare: ${targetSquare}`);
 
     const move = game.move({
@@ -35,19 +35,28 @@ const ChessBoard = () => {
     console.log(`move: ${JSON.stringify(move)}`);
 
     if (move === null) {
-      setError('Illegal move. Try again.');
-      return; // Illegal move, do not update the board
+      setInval('Illegal move. Try again.');
+      console.log(inval)
+
+      // Clear error message after 3 seconds
+      setTimeout(() => {
+        setInval('');
+      }, 5000);
+
+      return;
     }
     setgame(new Chess(game.fen()));
-    setplayert(playert === 'white' ? 'black' : 'white');
     checkStatus();
+    if (!game.isGameOver()) {
+      setplayert(playert === 'white' ? 'black' : 'white');
+    }
   };
 
   const handleQuit = () => {
     alert(`${playert === 'white' ? 'Black' : 'White'} Wins As ${playert} Quit`);
     setgame(new Chess());
     setStatus('');
-    setError('');
+    setInval('');
     setplayert('white');
   };
 
@@ -60,8 +69,8 @@ const ChessBoard = () => {
         />
       </div>
       <div className="flex flex-col items-center">
-        <p className="text-white">{status}</p>
-        <p className="text-white">{error}</p>
+        <p className="text-white"><span className="font-bold">Turn : </span>{status}</p>
+        <p className="text-red-500">{inval}</p>
         <button onClick={handleQuit} className="bg-slate-400 rounded border-black w-44 h-12 font-bold mt-4">QUIT</button>
       </div>
     </div>
